@@ -7,6 +7,9 @@ public class Alarm : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private float _changingVolumeTime;
 
+    private float _minVolume = 0f;
+    private float _maxVolume = 1f;
+
     private Coroutine _changingVolume;
 
     public void TurnOnAlarm()
@@ -16,7 +19,7 @@ public class Alarm : MonoBehaviour
             StopCoroutine(_changingVolume);
         }
 
-        _changingVolume= StartCoroutine( IncreaseVolume());
+        _changingVolume= StartCoroutine( ChangeVolume(_maxVolume));
     }
 
     public void TurnOffAlarm()
@@ -26,29 +29,14 @@ public class Alarm : MonoBehaviour
             StopCoroutine(_changingVolume);
         }
 
-        _changingVolume = StartCoroutine( TurnDownVolume());
+        _changingVolume = StartCoroutine(ChangeVolume(_minVolume));
     }
 
-    private IEnumerator IncreaseVolume()
+    private IEnumerator ChangeVolume(float targetVolume)
     {
-        float _changingVolumeRunningTime = 0;
-
-        while (_audioSource.volume < 1f)
+        while (_audioSource.volume != targetVolume)
         {
-            _changingVolumeRunningTime += Time.deltaTime;
-            _audioSource.volume = Mathf.Lerp(_audioSource.volume, 1f,_changingVolumeRunningTime/ _changingVolumeTime);
-            yield return null;
-        }
-    }
-
-    private IEnumerator TurnDownVolume()
-    {
-        float _changingVolumeRunningTime = 0;        
-
-        while (_audioSource.volume > 0f)
-        {
-            _changingVolumeRunningTime += Time.deltaTime;
-            _audioSource.volume = Mathf.Lerp(_audioSource.volume, 0f, _changingVolumeRunningTime / _changingVolumeTime);
+            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, targetVolume, Time.deltaTime/_changingVolumeTime);
             yield return null;
         }
     }
